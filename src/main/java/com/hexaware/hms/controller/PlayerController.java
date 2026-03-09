@@ -10,7 +10,7 @@ import com.hexaware.hms.dto.PlayerResponseDTO;
 import com.hexaware.hms.service.IPlayerService;
 
 @RestController
-@RequestMapping("api/players")
+@RequestMapping("/api/players")
 public class PlayerController {
 	@Autowired 
 	private IPlayerService service;
@@ -40,5 +40,12 @@ public class PlayerController {
 		return service.getPlayerById(id);
 		
 	}
+	
+    @GetMapping("/team/{teamName}")
+    public List<PlayerResponseDTO> getPlayersByTeam(@PathVariable String teamName){
+
+        return service.getPlayersByTeamName(teamName);
+
+    }
 
 }

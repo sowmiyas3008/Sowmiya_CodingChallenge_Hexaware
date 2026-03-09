@@ -13,5 +13,7 @@ public interface IPlayerService {
 	
 	List<PlayerResponseDTO> getAllPlayers();
 	PlayerResponseDTO getPlayerById(int id);
+	
+	List<PlayerResponseDTO> getPlayersByTeamName(String teamName);
 
 }

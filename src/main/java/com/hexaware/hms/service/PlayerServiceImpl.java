@@ -2,6 +2,7 @@ package com.hexaware.hms.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.hexaware.hms.dto.PlayerRequestDTO;
 import com.hexaware.hms.dto.PlayerResponseDTO;
@@ -12,90 +13,116 @@ import com.hexaware.hms.repo.IPlayerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
-public class PlayerServiceImpl implements IPlayerService{
+public class PlayerServiceImpl implements IPlayerService {
 
-	
-	@Autowired
-	private IPlayerRepo repo;
-	
-	private PlayerResponseDTO convertToDTO(Player player) {
-		PlayerResponseDTO dto = new PlayerResponseDTO();
-		dto.setPlayer_id(player.getPlayer_id());
-		dto.setPlayer_name(player.getPlayer_name());
-		dto.setJersey_no(player.getJersey_no());
-		dto.setRole(player.getRole());
-		
-		return dto;
-	}
-	@Override
-	public PlayerResponseDTO addPlayer(PlayerRequestDTO dto) {
-		Player player = new Player();
-		
-		player.setPlayer_name(dto.getPlayer_name());
-		player.setJersey_no(dto.getJersey_no());
-		player.setRole(dto.getRole());
-		player.setTotal_matches(dto.getTotal_matches());
-		player.setTeam_name(dto.getTeam_name());
-		player.setCountry_state_name(dto.getCountry_state_name());
-		player.setDescription(dto.getDescription());
-		
-		Player saved = repo.save(player);
-		return convertToDTO(saved);
-	}
+    @Autowired
+    private IPlayerRepo repo;
 
-	@Override
-	public PlayerResponseDTO updatePlayer(int id, PlayerRequestDTO dto) {
-		Player player = repo.findById(id).orElseThrow(() -> new PlayerNotFoundException("Player not found"));
-		
-		player.setPlayer_name(dto.getPlayer_name());
-		player.setJersey_no(dto.getJersey_no());
-		player.setRole(dto.getRole());
-		player.setTotal_matches(dto.getTotal_matches());
-		player.setTeam_name(dto.getTeam_name());
-		player.setCountry_state_name(dto.getCountry_state_name());
-		player.setDescription(dto.getDescription());
-		
-		Player updated = repo.save(player);
-		
-		return convertToDTO(updated);
-	}
+    // Convert Entity -> Response DTO
+    private PlayerResponseDTO convertToDTO(Player player) {
 
-	@Override
-	public void delPlayer(int id) {
+        PlayerResponseDTO dto = new PlayerResponseDTO();
+
+        dto.setPlayerId(player.getPlayerId());
+        dto.setPlayerName(player.getPlayerName());
+        dto.setJerseyNo(player.getJerseyNo());
+        dto.setRole(player.getRole());
+
+        return dto;
+    }
+
+    // Add Player
+    @Override
+    public PlayerResponseDTO addPlayer(PlayerRequestDTO dto) {
+
+        Player player = new Player();
+
+        player.setPlayerName(dto.getPlayerName());
+        player.setJerseyNo(dto.getJerseyNo());
+        player.setRole(dto.getRole());
+        player.setTotalMatches(dto.getTotalMatches());
+        player.setTeamName(dto.getTeamName());
+        player.setCountryStateName(dto.getCountryStateName());
+        player.setDescription(dto.getDescription());
+
+        Player saved = repo.save(player);
+
+        return convertToDTO(saved);
+    }
+
+    // Update Player
+    @Override
+    public PlayerResponseDTO updatePlayer(int id, PlayerRequestDTO dto) {
+
+        Player player = repo.findById(id)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
+
+        player.setPlayerName(dto.getPlayerName());
+        player.setJerseyNo(dto.getJerseyNo());
+        player.setRole(dto.getRole());
+        player.setTotalMatches(dto.getTotalMatches());
+        player.setTeamName(dto.getTeamName());
+        player.setCountryStateName(dto.getCountryStateName());
+        player.setDescription(dto.getDescription());
+
+        Player updated = repo.save(player);
+
+        return convertToDTO(updated);
+    }
+
+    // Delete Player
+    @Override
+    public void delPlayer(int id) {
+
         Player player = repo.findById(id)
                 .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
 
         repo.delete(player);
-	}
+    }
 
-	@Override
-	public List<PlayerResponseDTO> getAllPlayers() {
-		
-		List<Player> players = repo.findAll();
-		List<PlayerResponseDTO> res = new ArrayList<>();
-		
-		for(Player p : players) {
-			PlayerResponseDTO dto = convertToDTO(p);
-			res.add(dto);
-		}
-		return res;
-	}
+    // Get All Players
+    @Override
+    public List<PlayerResponseDTO> getAllPlayers() {
 
-	@Override
-	public PlayerResponseDTO getPlayerById(int id) {
+        List<Player> players = repo.findAll();
+
+        List<PlayerResponseDTO> response = new ArrayList<>();
+
+        for (Player p : players) {
+
+            PlayerResponseDTO dto = convertToDTO(p);
+            response.add(dto);
+        }
+
+        return response;
+    }
+
+    // Get Player By ID
+    @Override
+    public PlayerResponseDTO getPlayerById(int id) {
+
         Player player = repo.findById(id)
                 .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
 
-        PlayerResponseDTO dto = convertToDTO(player);
+        return convertToDTO(player);
+    }
+    
+    @Override
+    public List<PlayerResponseDTO> getPlayersByTeamName(String teamName) {
 
-        return dto;
+        List<Player> players = repo.getPlayersByTeamName(teamName);
 
-	}
+        return players.stream().map(player -> {
 
-	
-	
-	
+            PlayerResponseDTO dto = new PlayerResponseDTO();
+            dto.setPlayerId(player.getPlayerId());
+            dto.setPlayerName(player.getPlayerName());
+            dto.setJerseyNo(player.getJerseyNo());
+            dto.setRole(player.getRole());
 
+            return dto;
+
+        }).collect(Collectors.toList());
+    }
 }
